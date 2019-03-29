@@ -146,6 +146,16 @@ function _update()
 			entities.player.diving_dir = nil
   end
  end
+if entities.player.x < 0 then
+	entities.player.x = 0
+elseif entities.player.x > 127 * 8 then
+	entities.player.x = 127 * 8
+end
+if entities.player.y < 0 then
+	entities.player.y = 0
+elseif entities.player.y > 63 * 8 then
+	entities.player.y = 63 * 8
+end
 
 	-- non-player entity update
 	for k in pairs(entities) do
@@ -241,8 +251,8 @@ end
 -- draw functions
 function _draw()
 	cls()
-	camera_x = entities.player.x - (64 - entities.player.width * 4)
-	camera_y = entities.player.y - (64 - entities.player.height * 4)
+	camera_x = min(max(entities.player.x - (64 - entities.player.width * 4), 0), 128 * 8 - 128)
+	camera_y = min(max(entities.player.y - (64 - entities.player.height * 4), 0), 64 * 8 - 128)
 	camera(camera_x, camera_y)
 	map(0,0,0,0,128,64)
 	for k in pairs(entities) do
@@ -290,8 +300,8 @@ entities["player"] = {
 
 for i=0,127 do
 	entities["bunny" .. i] = {
-		x = 0,
-		y = 0,
+		x = flr(rnd(31 * 8)),
+		y = flr(rnd(31 * 8)),
 		width = 1,
 		height = 1,
 		flipx = false,
