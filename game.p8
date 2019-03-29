@@ -161,8 +161,8 @@ function _update()
 					-- set destination away from player
 					xdiff = entities[k].x - entities.player.x
 					ydiff = entities[k].y - entities.player.y
-					entities[k].destination.x = flr(entities[k].x + 16 * xdiff / max(abs(xdiff), abs(ydiff)))
-					entities[k].destination.y = flr(entities[k].y + 16 * ydiff / max(abs(xdiff), abs(ydiff)))
+					entities[k].destination.x = min(max(flr(entities[k].x + 16 * xdiff / max(abs(xdiff), abs(ydiff))), 0), 127 * 8)
+					entities[k].destination.y = min(max(flr(entities[k].y + 16 * ydiff / max(abs(xdiff), abs(ydiff))), 0), 63 * 8)
 					entities[k].is_walking = true
 				end
 			end
