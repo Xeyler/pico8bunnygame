@@ -161,20 +161,20 @@ function do_main_game()
 			player.diving_dir = nil
   end
  end
-if player.x < 0 then
-	player.x = 0
-elseif player.x > map_width * 8 then
-	player.x = map_width * 8
-end
-if player.y < 0 then
-	player.y = 0
-elseif player.y > map_height * 8 then
-	player.y = map_height * 8
-end
+ if player.x < 0 then
+ 	player.x = 0
+ elseif player.x > map_width * 8 then
+ 	player.x = map_width * 8
+ end
+ if player.y < 0 then
+ 	player.y = 0
+ elseif player.y > map_height * 8 then
+ 	player.y = map_height * 8
+ end
 
 	-- non-player entity update
 	for k in pairs(entities) do
-		if k != 1 then
+		if entities[k].type == "bunny" then
 			-- update bunnies
 			-- run away from player
 			if player.is_walking or player.dive_tick != nil then
@@ -255,6 +255,243 @@ end
 			end
 		end
 	end
+	if #entities == 2 then
+		init_ending()
+		state = "ending"
+	end
+end
+
+cindex = 1
+
+function do_intro()
+	-- show game intro
+	pressed = btnp()
+	if cindex == 1 then
+		-- walk to player
+		brigham.x += 1
+		if brigham.x >= player.x - 9 then
+			brigham.is_walking = false
+		 cindex = cindex + 1
+		end
+	elseif cindex == 2 then
+		message = "hi, kyla!♥"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 3 then
+	 message = "i, um..."
+	 if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 4 then
+	 message = "i have a question for you!"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 5 then
+		message = "i was wondering if you'd li-"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 6 then
+		-- shake
+		shake = 2
+		cindex = cindex + 1
+	elseif cindex == 7 then
+		message = "whoa! what's that shaking?!"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 8 then
+		-- shake intensifies
+		shake = 5
+		cindex = cindex + 1
+	elseif cindex == 9 then
+	 message = "bunnies?! waaaahhhhh!"
+		-- bunnies explosion! woah!
+		for i=0,4 do
+ 		add(entities,{
+  		type = "bunny",
+  		x = camera_x + 130,
+  		y = camera_y + flr(rnd(136)) - 8,
+  		width = 1,
+  		height = 1,
+  		flipx = false,
+  		flipy = false,
+  		current_sprite_index = 1,
+  		sequence = {7, 8, 9},
+  		frame_delta_tick = 3,
+  		frame_tick = 0,
+  		is_walking = true
+ 		})
+		end
+		for k in pairs(entities) do
+			if entities[k].type == "bunny" then
+				entities[k].x = entities[k].x - 3
+				if entities[k].x < camera_x - 8 then
+					del(entities, entities[k])
+				end
+			end
+		end
+	 if band(pressed, 0b10000) == 0b10000 then
+	 	cindex = cindex + 1
+	 end
+	else
+		message = nil
+		shake = 0
+		state = "playing"
+		init_main_game()
+		input = 0b10000
+	end
+end
+
+function do_game_ending()
+	-- show game ending
+	pressed = btnp()
+	if cindex == 1 then
+		message = "hooray!"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 2 then
+		message = "you caught all the bunnies!"
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 3 then
+		message = "now i can finally ask you..."
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 4 then
+		message = "will you..."
+		if band(pressed, 0b10000) == 0b10000 then
+			cindex = cindex + 1
+			blink_button_timer = -20
+		end
+	elseif cindex == 5 then
+  message = "go to prom with me?♥"
+		brigham.is_walking = true
+		player.is_walking = true
+		if band(pressed, 0b10000) == 0b10000 then
+			has_game_ended = true
+		end
+	end
+end
+
+function init_main_game()
+ entities = {}
+
+ add(entities,{
+ 	type = "player",
+ 	x = 16 * 8,
+ 	y = 16 * 8,
+ 	width = 1,
+ 	height = 1,
+ 	flipx = false,
+ 	flipy = false,
+ 	current_sprite_index = 1,
+ 	sequence = {0, 1, 0, 2},
+ 	frame_delta_tick = 4,
+ 	frame_tick = 0,
+ 	walking_speed = 1.6,
+ 	is_walking = false
+ })
+ 
+ player = entities[1]
+ 
+ add(entities,{
+ 	type = "brigham",
+ 	x = player.x - 9,
+ 	y = player.y,
+ 	width = 1,
+ 	height = 1,
+ 	flipx = true,
+ 	flipy = false,
+ 	current_sprite_index = 1,
+ 	sequence = {16, 17, 16, 18},
+ 	frame_delta_tick = 5,
+ 	frame_tick = 0,
+ 	walking_speed = 2,
+ 	is_walking = true
+ })
+ 
+ brigham = entities[2]
+	
+ for i=0,150 do
+ 	add(entities,{
+ 		type = "bunny",
+ 		x = flr(rnd(31 * 8)),
+ 		y = flr(rnd(31 * 8)),
+ 		width = 1,
+ 		height = 1,
+ 		flipx = false,
+ 		flipy = false,
+ 		current_sprite_index = 1,
+ 		sequence = {7, 8, 9},
+ 		frame_delta_tick = 3,
+ 		frame_tick = 0,
+ 		walking_speed = 2,
+ 		is_walking = false,
+ 		pathfind_timer = 0,
+ 		destination = nil
+ 	})
+ end
+end
+
+function init_ending()
+	cindex = 1
+ entities = {}
+ 
+ add(entities,{
+ 	type = "player",
+ 	x = 16 * 8,
+ 	y = 16 * 8,
+ 	width = 1,
+ 	height = 1,
+ 	flipx = false,
+ 	flipy = false,
+ 	current_sprite_index = 1,
+ 	sequence = {0, 1, 0, 2},
+ 	frame_delta_tick = 4,
+ 	frame_tick = 0,
+ 	walking_speed = 1.6,
+ 	is_walking = false
+ })
+ 
+ player = entities[1]
+ 
+ add(entities,{
+ 	type = "brigham",
+ 	x = player.x - 9,
+ 	y = player.y,
+ 	width = 1,
+ 	height = 1,
+ 	flipx = true,
+ 	flipy = false,
+ 	current_sprite_index = 1,
+ 	sequence = {16, 17, 16, 18},
+ 	frame_delta_tick = 5,
+ 	frame_tick = 0,
+ 	walking_speed = 2,
+ 	is_walking = false
+ })
+ 
+ brigham = entities[2]
+end
+-->8
+-- draw functions
+blink_button_timer = 0
+shake = 0
+function _draw()
 	-- entity walking animation
 	for k in pairs(entities) do
 		if entities[k].is_walking or entities[k].dive_tick != nil then
@@ -267,34 +504,41 @@ end
 			entities[k].current_sprite_index = 1
 		end
 	end
-end
-
-function do_intro()
-	-- show game intro
-	state = "playing"
-end
-
-function do_ending()
-	-- show game ending
-end
--->8
--- draw functions
-function _draw()
+	
 	cls()
 	camera_x = min(max(player.x - (64 - player.width * 4), 0), map_width * 8 - 120)
 	camera_y = min(max(player.y - (64 - player.height * 4), 0), map_height * 8 - 120)
+	camera_x = camera_x + flr(rnd(shake))
+	camera_y = camera_y + flr(rnd(shake))
 	camera(camera_x, camera_y)
 	map(0,0,0,0,128,64)
 	for k in pairs(entities) do
 		spr(entities[k].sequence[entities[k].current_sprite_index], entities[k].x, entities[k].y, entities[k].width, entities[k].height, entities[k].flipx, entities[k].flipy)
 	end
 	if is_debug_enabled then
- 	print("x,y: " .. flr(player.x / 8) .. " / " .. flr(player.y / 8), camera_x, camera_y)
- 	print("mget: " .. mget(player.x / 8, player.y / 8), camera_x, camera_y + 6)
- 	print("ws: " .. player.walking_speed, camera_x, camera_y + 12)
- 	print("btn: " .. input, camera_x, camera_y + 18)
- 	print("pbtn: " .. band(bnot(last_input), input), camera_x, camera_y + 24)
-		print("e: " .. tablelength(entities), camera_x, camera_y + 30, 8)
+ 	print("x,y: " .. flr(player.x / 8) .. " / " .. flr(player.y / 8), camera_x, camera_y, 8)
+ 	print("mget: " .. mget(player.x / 8, player.y / 8), camera_x, camera_y + 6, 8)
+ 	print("ws: " .. player.walking_speed, camera_x, camera_y + 12, 8)
+ 	print("btn: " .. input, camera_x, camera_y + 18, 8)
+ 	print("pbtn: " .. band(bnot(last_input), input), camera_x, camera_y + 24, 8)
+		print("e: " .. #entities, camera_x, camera_y + 30, 8)
+	end
+	if message != nil then
+		rectfill(camera_x, camera_y + 120, camera_x + 128, camera_y + 128, 1)
+		print(message, camera_x + 2, camera_y + 121, 7)
+		if blink_button_timer >= 10 then
+			print("⬇️", camera_x + 120, camera_y + 121, 7)
+		end
+		blink_button_timer = blink_button_timer + 1
+		if blink_button_timer == 20 then
+		 blink_button_timer = 0
+		end
+	end
+	if has_game_ended then
+		cls()
+		camera(0, 0)
+		print("the end", 50, 60)
+		print("♥", 60, 66, 8)
 	end
 end
 
@@ -313,6 +557,9 @@ end
 -- global variables
 map_width = 32
 map_height = 32
+
+message = nil
+has_game_ended = false
 
 entities = {}
 
@@ -334,25 +581,23 @@ add(entities,{
 
 player = entities[1]
 
-for i=0,127 do
-	add(entities,{
-		type = "bunny",
-		x = flr(rnd(31 * 8)),
-		y = flr(rnd(31 * 8)),
-		width = 1,
-		height = 1,
-		flipx = false,
-		flipy = false,
-		current_sprite_index = 1,
-		sequence = {7, 8, 9},
-		frame_delta_tick = 3,
-		frame_tick = 0,
-		walking_speed = 2,
-		is_walking = false,
-		pathfind_timer = 0,
-		destination = nil
-	})
-end
+add(entities,{
+	type = "brigham",
+	x = player.x - 74,
+	y = player.y,
+	width = 1,
+	height = 1,
+	flipx = true,
+	flipy = false,
+	current_sprite_index = 1,
+	sequence = {16, 17, 16, 18},
+	frame_delta_tick = 5,
+	frame_tick = 0,
+	walking_speed = 2,
+	is_walking = true
+})
+
+brigham = entities[2]
 -->8
 -- global functions
 function tablelength(t)
